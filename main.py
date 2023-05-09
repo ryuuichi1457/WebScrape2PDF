@@ -23,7 +23,7 @@ def saveimage(tag,attributes):
                 continue
             d = d.get("src")
         # 画像URLの処理
-            if d and d.startswith("http") and d.endswith(("jpg", "jpeg", "png", "gif", "bmp")):
+            if d and d.startswith("http") and d.endswith(("jpg", "jpeg", "png", "bmp")):
                 img_list.append(d)  # srcの末尾が.jpgか.pngの場合リストに追加
 
     for img_data in img_list:  # 画像データをファイルに保存
@@ -41,16 +41,19 @@ def yes_no_input():
         elif choice in ['n', 'no']:
             return False
 
-def saveformat(domain,tag_name,attr_name,attr_value):
-    save_data = {
+def saveformat(domain,tag_name,attr_name,attr_value,):
+    with open('.json', 'r') as f:
+        data = json.load(f)
+    new_data = {
     domain: {
         "tag_name": tag_name,
         "attr_name": attr_name,
         "attr_value": attr_value
     }
 }
-    with open("./.json", mode="w") as json_file3:
-        json.dump(save_data, json_file3, ensure_ascii=False, indent=4)
+    data.update(new_data)
+    with open('.json', 'w') as f:
+        json.dump(data, f, indent=4)
 ##関数定義ここまで
 
 if __name__ == "__main__":
@@ -107,9 +110,9 @@ if __name__ == "__main__":
 
     
     now = datetime.datetime.now()
-    pdf_FileName = './output/' + now.strftime('%m%d_')+input("保存名を入力 : ")+'.pdf' # 出力するPDFの名前
+    pdf_FileName = './output/' + now.strftime('%m%d_%H%M')+input("保存名を入力 : ")+'.pdf' # 出力するPDFの名前
     png_Folder = "tmp\\"
-    allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]  # 許可する拡張子のリスト
+    allowed_extensions = [".jpg", ".jpeg", ".png", ".bmp"]  # 許可する拡張子のリスト
 
     with open(pdf_FileName,"wb") as f:
     # 画像フォルダの中にある許可された拡張子を持つファイルを取得し配列に追加、バイナリ形式でファイルに書き込む
