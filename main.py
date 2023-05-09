@@ -1,23 +1,30 @@
-import os
-import requests
 from bs4 import BeautifulSoup
-import img2pdf
 from PIL import Image
-import shutil
+from urllib.parse import urlparse
 import datetime
 import json
-from urllib.parse import urlparse
+import os
+import shutil
+import requests
+import img2pdf
 
+
+##関数定義
 def saveimage(tag,attributes):
     url_cont = BeautifulSoup(requests.get(url).text, 'html.parser')   # url解析
-    img_all = url_cont.find(tag, attrs=attributes)          # divタグ情報を取得
-    img_all_2 = img_all.find_all("img")                                 # imgタグ情報を取得
-    for d in img_all_2:
-        if d is None:
-            continue
-        d = d.get("src")
-        if d and d.startswith("http") and (d.endswith("jpg") or d.endswith("png")):
-         img_list.append(d)  # srcの末尾が.jpgか.pngの場合リストに追加
+    img_all = url_cont.find(tag, attrs=attributes)
+    if img_all is None:
+        # 何も見つからなかった場合の処理
+        pass
+    else:
+        img_all_2 = img_all.find_all("img")
+        for d in img_all_2:
+            if d is None:
+                continue
+            d = d.get("src")
+        # 画像URLの処理
+            if d and d.startswith("http") and d.endswith(("jpg", "jpeg", "png", "gif", "bmp")):
+                img_list.append(d)  # srcの末尾が.jpgか.pngの場合リストに追加
 
     for img_data in img_list:  # 画像データをファイルに保存
         file_name = os.path.join("tmp", img_data.split('/')[-1])
@@ -28,23 +35,24 @@ def saveimage(tag,attributes):
 
 def yes_no_input():
     while True:
-        choice = input("Please respond with 'yes' or 'no' [y/N]: ").lower()
+        choice = input("フォーマットとして保存しますか？y/n : ").lower()
         if choice in ['y', 'ye', 'yes']:
             return True
         elif choice in ['n', 'no']:
             return False
 
-"""def saveformat(tag_name,attr_name,attr_value):
+def saveformat(domain,tag_name,attr_name,attr_value):
     save_data = {
-    \"domain\": {
-        "tag_name": \"div\",
-        "attr_name": \"id\",
-        "attr_value": \"the-content\"
+    domain: {
+        "tag_name": tag_name,
+        "attr_name": attr_name,
+        "attr_value": attr_value
     }
 }
     with open("./.json", mode="w") as json_file3:
         json.dump(save_data, json_file3, ensure_ascii=False, indent=4)
-"""
+##関数定義ここまで
+
 if __name__ == "__main__":
     img_list = []
 
@@ -99,17 +107,16 @@ if __name__ == "__main__":
 
     
     now = datetime.datetime.now()
-    pdf_FileName = './output/' + now.strftime('%m%d_')+input("保存名を入力")+'.pdf' # 出力するPDFの名前
+    pdf_FileName = './output/' + now.strftime('%m%d_')+input("保存名を入力 : ")+'.pdf' # 出力するPDFの名前
     png_Folder = "tmp\\"
-    extension  = ".jpg"
+    allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]  # 許可する拡張子のリスト
 
     with open(pdf_FileName,"wb") as f:
-        # 画像フォルダの中にあるPNGファイルを取得し配列に追加、バイナリ形式でファイルに書き込む
-        f.write(img2pdf.convert([Image.open(png_Folder+j).filename for j in os.listdir(png_Folder)if j.endswith(extension)]))
+    # 画像フォルダの中にある許可された拡張子を持つファイルを取得し配列に追加、バイナリ形式でファイルに書き込む
+        f.write(img2pdf.convert([os.path.join(png_Folder, j) for j in os.listdir(png_Folder) if os.path.splitext(j)[1] in allowed_extensions]))
         print("complete!!")
-        shutil.rmtree('tmp/')
+    shutil.rmtree('tmp/')
 
-    """if not domain in data:
+    if not domain in data:
         if yes_no_input():
-            saveformat(tag_name,attr_name,attr_value)
-    """
+            saveformat(domain,tag_name,attr_name,attr_value)
