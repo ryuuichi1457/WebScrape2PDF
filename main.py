@@ -33,9 +33,9 @@ def saveimage(tag,attributes):
         print(file_name)  # 保存ファイル名出力
     #print("サイトのタイトルは"+url_cont.title.string+"です")
 
-def yes_no_input():
+def yes_no_input(text):
     while True:
-        choice = input("フォーマットとして保存しますか？y/n : ").lower()
+        choice = input(text+"y/n : ").lower()
         if choice in ['y', 'ye', 'yes']:
             return True
         elif choice in ['n', 'no']:
@@ -87,27 +87,19 @@ if __name__ == "__main__":
     url = input("URLを入力してください : ")
     parsed_url = urlparse(url)
     domain = parsed_url.netloc.replace("www.", "")
+    use_format = yes_no_input("フォーマットを利用しますか？")
 
-
-    use_data = None
-
-    if domain in data:
+    if domain in data and use_format:
         print("フォーマットが見つかりました！")
-        choice = input("フォーマットを利用しますか？ y/n : ")
-        use_data = choice in ("y", "ye", "yes")
-        if use_data:
-            tag_name = data[domain]["tag_name"]
-            attr_name = data[domain]["attr_name"]
-            attr_value = data[domain]["attr_value"]
-            saveimage(tag_name,{attr_name:attr_value})
-
-    if not use_data:
-        tag_name =input("要素名を入力 : ")
-        attr_name =input("属性名を入力 : ")
-        attr_value =input("属性値を入力 : ")
+        tag_name = data[domain]["tag_name"]
+        attr_name = data[domain]["attr_name"]
+        attr_value = data[domain]["attr_value"]
         saveimage(tag_name,{attr_name:attr_value})
-
-
+    else:
+        tag_name = input("要素名を入力 : ")
+        attr_name = input("属性名を入力 : ")
+        attr_value = input("属性値を入力 : ")
+        saveimage(tag_name,{attr_name:attr_value})
     
     now = datetime.datetime.now()
     pdf_FileName = './output/' + now.strftime('%m%d_%H%M')+input("保存名を入力 : ")+'.pdf' # 出力するPDFの名前
@@ -121,5 +113,5 @@ if __name__ == "__main__":
     shutil.rmtree('tmp/')
 
     if not domain in data:
-        if yes_no_input():
+        if yes_no_input("フォーマットを保存しますか？"):
             saveformat(domain,tag_name,attr_name,attr_value)
